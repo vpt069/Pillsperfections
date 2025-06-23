@@ -37,11 +37,15 @@ jobs:
           curl -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
           unzip commandlinetools.zip -d latest
           rm commandlinetools.zip
+          # Set ANDROID_HOME and add cmdline-tools/latest/bin and platform-tools to PATH for subsequent steps
+          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
 
       - name: Accept SDK licenses and install SDK components
         run: |
-          export ANDROID_HOME=$HOME/android-sdk
-          export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$PATH
+          # Debugging: Print PATH to verify it's set correctly
+          echo "Current PATH: $PATH"
           yes | sdkmanager --licenses
           sdkmanager --update
           sdkmanager "build-tools;31.0.0" "platform-tools" "platforms;android-31" "ndk;21.4.7075529"
@@ -50,11 +54,11 @@ jobs:
         run: |
           buildozer android debug deploy run
         env:
-          # Ensure ANDROID_HOME is correctly set for Buildozer
-          ANDROID_HOME: ${{ env.ANDROID_HOME }}
-          ANDROIDSDK: ${{ env.ANDROID_HOME }}
+          # ANDROID_HOME and PATH are now set globally via GITHUB_ENV/PATH from the previous step.
+          # We explicitly set JAVA_HOME as it might not be globally set by the runner image.
           JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
-          PATH: $HOME/android-sdk/cmdline-tools/latest/bin:$HOME/android-sdk/platform-tools:$PATH
+          # ANDROIDSDK is set for buildozer, referencing the globally available ANDROID_HOME.
+          ANDROIDSDK: ${{ env.ANDROID_HOME }}
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
