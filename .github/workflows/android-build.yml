@@ -25,7 +25,7 @@ jobs:
             zip unzip openjdk-11-jdk \
             python3-pip python3-setuptools python3-wheel \
             libffi-dev libssl-dev libjpeg-dev \
-            zlib1g-dev libncurses-dev libandroid-tools adb
+            zlib1g-dev libncurses-dev adb
 
       - name: Install Buildozer and Cython
         run: |
