@@ -2,51 +2,64 @@ name: Build APK
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
 
 jobs:
   build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: "3.10"
 
       - name: Install system packages
         run: |
-          sudo apt update
-          sudo apt install -y zip unzip openjdk-11-jdk libncurses5
+          sudo apt-get update
+          sudo apt-get install -y \
+            zip unzip libncurses6 libncurses-dev openjdk-11-jdk \
+            wget git python3-pip
 
       - name: Install Buildozer
         run: |
-          pip install --upgrade pip
-          pip install buildozer cython
+          python3 -m pip install --upgrade pip setuptools wheel
+          pip install --upgrade buildozer
 
-      - name: Set up Android SDK
+      - name: Set up Android SDK (cmdline tools)
         run: |
-          mkdir -p ~/.android
-          echo "### Accept SDK licenses" > ~/.android/repositories.cfg
-          yes | sdkmanager --licenses || true
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          cd $HOME/android-sdk/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          unzip cmdline-tools.zip
+          mv cmdline-tools latest
+        shell: bash
 
-      - name: Accept SDK licenses (manual fallback)
+      - name: Accept SDK licenses
         run: |
-          yes | sdkmanager --licenses || true
+          yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
+        env:
+          ANDROID_HOME: $HOME/android-sdk
+          JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+        shell: bash
 
       - name: Install Android build tools
         run: |
-          sdkmanager "build-tools;31.0.0" "platform-tools" "platforms;android-31"
+          $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager \
+            "platform-tools" "platforms;android-31" "build-tools;31.0.0"
+        env:
+          ANDROID_HOME: $HOME/android-sdk
+          JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+        shell: bash
 
-      - name: Build APK
+      - name: Build APK with Buildozer
         run: |
           buildozer android debug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Pillsperfections-APK
-          path: bin/*.apk
+        env:
+          ANDROIDSDK: $HOME/android-sdk
+          ANDROID_HOME: $HOME/android-sdk
+          JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
