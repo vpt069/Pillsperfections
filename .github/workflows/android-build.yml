@@ -10,56 +10,60 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.10"
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.10"
 
-      - name: Install system packages
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            zip unzip libncurses6 libncurses-dev openjdk-11-jdk \
-            wget git python3-pip
+    - name: Install system packages
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y zip unzip openjdk-11-jdk python3-pip python3-setuptools python3-virtualenv libffi-dev libssl-dev libjpeg-dev zlib1g-dev
 
-      - name: Install Buildozer
-        run: |
-          python3 -m pip install --upgrade pip setuptools wheel
-          pip install --upgrade buildozer
+    - name: Install Buildozer
+      run: |
+        pip install --upgrade pip
+        pip install cython
+        pip install buildozer
 
-      - name: Set up Android SDK (cmdline tools)
-        run: |
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          cd $HOME/android-sdk/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
-          unzip cmdline-tools.zip
-          mv cmdline-tools latest
-        shell: bash
+    - name: Set up Android SDK (cmdline tools)
+      run: |
+        mkdir -p $HOME/android-sdk/cmdline-tools
+        cd $HOME/android-sdk/cmdline-tools
+        curl -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip
+        unzip commandlinetools.zip -d latest
+        rm commandlinetools.zip
+      env:
+        JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
 
-      - name: Accept SDK licenses
-        run: |
-          yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses
-        env:
-          ANDROID_HOME: $HOME/android-sdk
-          JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
-        shell: bash
+    - name: Accept SDK licenses
+      run: |
+        yes | $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager --licenses || true
+      env:
+        ANDROID_HOME: $HOME/android-sdk
+        JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
 
-      - name: Install Android build tools
-        run: |
-          $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager \
-            "platform-tools" "platforms;android-31" "build-tools;31.0.0"
-        env:
-          ANDROID_HOME: $HOME/android-sdk
-          JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
-        shell: bash
+    - name: Install Android build tools
+      run: |
+        $HOME/android-sdk/cmdline-tools/latest/bin/sdkmanager \
+          "build-tools;31.0.0" "platform-tools" "platforms;android-31"
+      env:
+        ANDROID_HOME: $HOME/android-sdk
+        JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
 
-      - name: Build APK with Buildozer
-        run: |
-          buildozer android debug
-        env:
-          ANDROIDSDK: $HOME/android-sdk
-          ANDROID_HOME: $HOME/android-sdk
-          JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+    - name: Build APK with Buildozer
+      run: |
+        buildozer android debug
+      env:
+        ANDROIDSDK: $HOME/android-sdk
+        ANDROID_HOME: $HOME/android-sdk
+        JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
+
+    - name: Upload APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: Pillsperfections-APK
+        path: bin/*.apk
