@@ -22,12 +22,12 @@ jobs:
       run: |
         sudo apt update
         sudo apt install -y \
-          zip unzip openjdk-11-jdk \
-          build-essential git python3-pip \
-          libgl1-mesa-dev libgles2-mesa-dev \
-          libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
-          libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev \
-          zlib1g-dev libffi-dev libssl-dev libncurses5
+  zip unzip openjdk-11-jdk \
+  build-essential git python3-pip \
+  libgl1-mesa-dev libgles2-mesa-dev \
+  libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
+  libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev \
+  zlib1g-dev libffi-dev libssl-dev
 
         pip install --upgrade pip setuptools cython virtualenv
         pip install buildozer
