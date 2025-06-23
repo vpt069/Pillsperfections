@@ -1,29 +1,16 @@
 [app]
 
-# App details
-title = Pillsperfections
-package.name = pillsperfections
-package.domain = org.dwij
+# (str) Android SDK directory
+android.sdk_path = $HOME/android-sdk
 
-# Source
-source.dir = .
-source.include_exts = py,png,jpg,kv,atlas
-entrypoint = main.py
+# (str) Android NDK directory
+android.ndk_path = $HOME/android-sdk/ndk/21.4.7075529
 
-# Requirements
-requirements = python3,kivy
+# (str) Android entry point, default is ok
+android.entrypoint = org.kivy.android.PythonActivity
 
-# Architecture
-arch = arm64-v8a
-
-# Orientation
-orientation = portrait
-
-# Android versioning
+# (str) Android API to use
 android.api = 31
-android.ndk = 25b
-android.minapi = 24
-ndk.api = 24
 
-# App version
-version = 0.1
+# (str) Android build tools version
+android.build_tools_version = 31.0.0
