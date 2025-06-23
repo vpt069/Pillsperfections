@@ -3,41 +3,41 @@ name: Build APK with Buildozer
 on:
   push:
     branches:
-      - main  # or change to your default branch name
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.10'
+          python-version: "3.10"
 
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y \
-            zip unzip openjdk-11-jdk \
-            python3-pip python3-setuptools python3-wheel \
-            libffi-dev libssl-dev libjpeg-dev \
-            zlib1g-dev libncurses-dev adb
+          sudo apt-get install -y zip unzip openjdk-11-jdk python3-pip
 
-      - name: Install Buildozer and Cython
+      - name: Install buildozer and Cython
         run: |
-          python3 -m pip install --upgrade pip
+          pip install --upgrade pip
           pip install buildozer cython
 
-      - name: Build the APK
+      - name: Set up Android SDK
+        run: |
+          mkdir -p ~/.android
+          echo '### Accepting all licenses' 
+          yes | sdkmanager --licenses || true
+
+      - name: Install Android Build Tools & SDK
+        run: |
+          sdkmanager "build-tools;36.0.0" "platform-tools" "platforms;android-31"
+
+      - name: Build with Buildozer
         run: |
           buildozer android debug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: FreshPillApp-APK
-          path: bin/*.apk
