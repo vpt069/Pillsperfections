@@ -26,9 +26,10 @@ jobs:
       - name: Install Buildozer and dependencies
         run: |
           python3 -m pip install --upgrade pip setuptools wheel
+          # Corrected Buildozer version to 1.5.0 as 1.4.2 was not found
           pip install cython==0.29.33
-          pip install buildozer==1.4.2
-          
+          pip install buildozer==1.5.0
+
       - name: Set up Android SDK (cmdline tools)
         run: |
           mkdir -p $HOME/android-sdk/cmdline-tools
@@ -44,11 +45,12 @@ jobs:
           yes | sdkmanager --licenses
           sdkmanager --update
           sdkmanager "build-tools;31.0.0" "platform-tools" "platforms;android-31" "ndk;21.4.7075529"
-        
+
       - name: Build APK with Buildozer
         run: |
           buildozer android debug deploy run
         env:
+          # Ensure ANDROID_HOME is correctly set for Buildozer
           ANDROID_HOME: ${{ env.ANDROID_HOME }}
           ANDROIDSDK: ${{ env.ANDROID_HOME }}
           JAVA_HOME: /usr/lib/jvm/java-11-openjdk-amd64
